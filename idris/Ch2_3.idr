@@ -1,4 +1,4 @@
-module Ch2'3
+module Ch2'3Through4
 
 data Desc : Type -> Type where
   Ret  : ix -> Desc ix
@@ -40,7 +40,7 @@ switch (l :: e) prop (propz, props) l' (TS t') =
 
 switchDesc :  {e : CEnum} -> {ix : Type}
            -> SPi e (\_ => \_ => Desc ix)
-			     -> (l' : CLabel) -> (t' : Tag l' e) -> Desc ix
+			     -> (l' : CLabel) -> Tag l' e -> Desc ix
 switchDesc {e} {ix} = switch e (\_ => \_ => Desc ix)
 
 DescDesc : Type -> Desc ()
@@ -57,3 +57,18 @@ DescDesc ix =
             )
           )
         ) l
+
+-- 2.4
+
+TaggedDesc : CEnum -> Type -> Type
+TaggedDesc e ix = (l : CLabel) -> Tag l e -> Desc ix
+
+Untag : {e : CEnum} -> TaggedDesc e ix -> Desc ix
+Untag {e} d = Arg CLabel $ \l => Arg (Tag l e) $ \t => d l t
+
+data Data : {ix : Type} -> Desc ix -> ix -> Type where
+  Con :  {d : Desc ix} -> {i : ix}
+      -> Synthesise d (Data d) i -> Data d i
+
+TData : {e : CEnum} -> TaggedDesc e ix -> ix -> Type
+TData d = Data (Untag d)
