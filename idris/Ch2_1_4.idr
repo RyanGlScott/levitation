@@ -35,6 +35,22 @@ switch :  (e : CEnum)
        -> (l' : CLabel) -> (t' : Tag l' e) -> prop l' t'
 -- NB: Don't use the name "l'" for the first element of the CEnum, or you'll
 -- trigger https://github.com/idris-lang/Idris-dev/issues/3651
-switch (l :: e) prop ((propz, props)) l  TZ      = propz
-switch (l :: e) prop ((propz, props)) l' (TS t') =
+switch (l :: e) prop (propz, props) l  TZ      = propz
+switch (l :: e) prop (propz, props) l' (TS t') =
   switch e (\l => \t => prop l (TS t)) props l' t'
+
+data Desc : Type -> Type where
+  Ret : ix -> Desc ix
+  Arg : (a : Type) -> (a -> Desc ix) -> Desc ix
+  Rec : ix -> Desc ix -> Desc ix
+
+VecDesc : Type -> Desc Nat
+VecDesc a =
+  Arg CLabel $ \l =>
+    Arg (Tag l VecCtors) $
+      switch VecCtors (\_ => \_ => Desc Nat)
+        ( Ret Z
+        , ( Arg Nat $ \n => Arg a $ \_ => Rec n $ Ret $ S n
+          , ()
+          )
+        ) l
