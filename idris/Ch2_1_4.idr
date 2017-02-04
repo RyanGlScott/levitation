@@ -33,6 +33,8 @@ switch :  (e : CEnum)
        -> (prop : (l : CLabel) -> (t : Tag l e) -> Type)
        -> SPi e prop
        -> (l' : CLabel) -> (t' : Tag l' e) -> prop l' t'
-switch (l' :: e) prop ((propz, props)) l' TZ      = propz
-switch (l  :: e) prop ((propz, props)) l' (TS t') =
+-- NB: Don't use the name "l'" for the first element of the CEnum, or you'll
+-- trigger https://github.com/idris-lang/Idris-dev/issues/3651
+switch (l :: e) prop ((propz, props)) l  TZ      = propz
+switch (l :: e) prop ((propz, props)) l' (TS t') =
   switch e (\l => \t => prop l (TS t)) props l' t'
